@@ -21,12 +21,12 @@ int DrawLine3D(const Vector3& Pos1, const Vector3& Pos2, const unsigned int Colo
 void DrawAxis3D(const float length);	//x,y,z 軸の描画
 
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine,
-                   _In_ int nCmdShow) {
-// ウィンドウ横幅
-const int WindowWidth = 1024;
+	_In_ int nCmdShow) {
+	// ウィンドウ横幅
+	const int WindowWidth = 1024;
 
-// ウィンドウ縦幅
-const int WindowHeight = 576;
+	// ウィンドウ縦幅
+	const int WindowHeight = 576;
 
 	// ウィンドウモードに設定
 	ChangeWindowMode(TRUE);
@@ -63,7 +63,7 @@ const int WindowHeight = 576;
 	SetCameraNearFar(1.0f, 1000.0f);//カメラの有効範囲を設定
 	SetCameraScreenCenter(WindowWidth / 2.0f, WindowHeight / 2.0f);//画面の中心をカメラの中心に合わせる
 	SetCameraPositionAndTargetAndUpVec(
-		Vector3(0.0f, 0.0f,-120.0f),		//カメラの位置
+		Vector3(-20.0f, 20.0f, -120.0f),		//カメラの位置
 		Vector3(0.0f, 0.0f, 0.0f),
 		Vector3(0.0f, 1.0f, 0.0f));
 
@@ -74,8 +74,10 @@ const int WindowHeight = 576;
 
 	//補間を使うデータ
 	//start->endを5[s]で完了させる
-	Vector3 start(-100.0f, 0, 0);		//スタート地点
-	Vector3 end  (+100.0f, 0, 0);		//エンド地点
+	Vector3 p0(-100.0f, 0, 0);		//スタート地点
+	Vector3 p1(-10.0f, 50.0f, 0.0f);	//制御点
+	Vector3 p2(+10.0f, -50.0f, 0);		//制御点
+	Vector3 p3(+100.0f, 0, 0);		//エンド地点
 	float maxTime = 5.0f;				//全体時間[s]
 	float timeRate;						//何% 時間が進んだか(率)
 
@@ -84,12 +86,12 @@ const int WindowHeight = 576;
 
 	//実行前に　カウンタ値を取得
 	startCount = GetNowHiPerformanceCount();	//long long int型　64bit int
-	
+
 	// 最新のキーボード情報用
-	char keys[256] = {0};
+	char keys[256] = { 0 };
 
 	// 1ループ(フレーム)前のキーボード情報
-	char oldkeys[256] = {0};
+	char oldkeys[256] = { 0 };
 
 	// ゲームループ
 	while (true) {
@@ -97,13 +99,13 @@ const int WindowHeight = 576;
 		for (int i = 0; i < 256; i++)
 		{
 			oldkeys[i] = keys[i];
-	}
+		}
 		// 最新のキーボード情報を取得
 		GetHitKeyStateAll(keys);
 
-		
+
 		//---------  ここからプログラムを記述  ----------//
-		
+
 
 		// 更新処理
 		//[R]キー　で、リスタート
@@ -124,7 +126,13 @@ const int WindowHeight = 576;
 
 		timeRate = min(elapsedTime / maxTime, 1.0f);
 
-		position = lerp(start, end, timeRate);
+		//2次ベジエ曲線
+		Vector3 a = lerp(p0, p1, timeRate);
+		Vector3 b = lerp(p1, p2, timeRate);
+		Vector3 c = lerp(p2, p3, timeRate);
+		Vector3 d = lerp(a, b, timeRate);
+		Vector3 e = lerp(b, c, timeRate);
+		position = lerp(d,e, timeRate);
 
 		// 画面クリア
 		ClearDrawScreen();			//画面を消去
@@ -133,14 +141,29 @@ const int WindowHeight = 576;
 
 		//球の描画
 		DrawSphere3D(position, 5.0f, 32, GetColor(255, 0, 0), GetColor(255, 255, 255), true);
+		DrawSphere3D(p0, 4.0f, 32, GetColor(0, 0, 255), GetColor(255, 255, 255), true);
+		DrawSphere3D(p1, 4.0f, 32, GetColor(0, 255, 0), GetColor(255, 255, 255), true);
+		DrawSphere3D(p2, 4.0f, 32, GetColor(0, 255, 255), GetColor(255, 255, 255), true);
+		DrawSphere3D(p3, 4.0f, 32, GetColor(255, 255, 0), GetColor(255, 255, 255), true);
+
+
+		//DrawSphere3D(a, 2.0f, 32, GetColor(0, 255, 0), GetColor(255, 255, 255), true);
+		//DrawSphere3D(b, 2.0f, 32, GetColor(0, 255, 0), GetColor(255, 255, 255), true);
+		//DrawLine3D(a,b,GetColor(0, 255, 0));
 
 		//
-		DrawFormatString(0, 0, GetColor(255, 255, 255), "position(%5.1f,%5.1f,%5.1f)",
+		DrawFormatString(0, 0, GetColor(255, 255, 255), "position(%6.1f,%6.1f,%6.1f)",
 			position.x, position.y, position.z);
 
 		DrawFormatString(0, 20, GetColor(255, 255, 255), "%7.3f[s]", elapsedTime);
 		DrawFormatString(0, 40, GetColor(255, 255, 255), "[R]:Restart");
 
+		DrawFormatString(0, 0, GetColor(255, 255, 255), "p0(%6.1f,%6.1f,%6.1f)",
+			p0.x, p0.y, p0.z);
+		DrawFormatString(0, 0, GetColor(255, 255, 255), "p1(%6.1f,%6.1f,%6.1f)",
+			p1.x, p1.y, p1.z);
+		DrawFormatString(0, 0, GetColor(255, 255, 255), "p2(%6.1f,%6.1f,%6.1f)",
+			p2.x, p2.y, p2.z);
 		//---------  ここまでにプログラムを記述  ---------//
 		// (ダブルバッファ)裏面
 		ScreenFlip();

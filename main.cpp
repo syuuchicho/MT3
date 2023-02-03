@@ -1,4 +1,5 @@
 #include <DxLib.h>
+#include<vector>
 #include"Vector3.h"
 // ウィンドウのタイトルに表示する文字列
 const char TITLE[] = "xx2x_xx_ナマエ: タイトル";
@@ -18,7 +19,11 @@ int SetCameraPositionAndTargetAndUpVec(
 //線分の描画
 int DrawLine3D(const Vector3& Pos1, const Vector3& Pos2, const unsigned int Color);
 
-void DrawAxis3D(const float length);	//x,y,z 軸の描画
+//x,y,z 軸の描画
+void DrawAxis3D(const float length);
+
+//制御点の集合(vectorコンテナ),補間する区間の添字、時間経過率
+Vector3 splinePosition(const std::vector<Vector3>& points, size_t startIndex, float t);
 
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine,
 	_In_ int nCmdShow) {
@@ -63,7 +68,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	SetCameraNearFar(1.0f, 1000.0f);//カメラの有効範囲を設定
 	SetCameraScreenCenter(WindowWidth / 2.0f, WindowHeight / 2.0f);//画面の中心をカメラの中心に合わせる
 	SetCameraPositionAndTargetAndUpVec(
-		Vector3(-20.0f, 20.0f, -120.0f),		//カメラの位置
+		Vector3(-20.0f, 20.0f, -200.0f),		//カメラの位置
 		Vector3(0.0f, 0.0f, 0.0f),
 		Vector3(0.0f, 1.0f, 0.0f));
 
@@ -75,11 +80,17 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	//補間を使うデータ
 	//start->endを5[s]で完了させる
 	Vector3 p0(-100.0f, 0, 0);		//スタート地点
-	Vector3 p1(-10.0f, 50.0f, 0.0f);	//制御点
-	Vector3 p2(+10.0f, -50.0f, 0);		//制御点
+	Vector3 p1(-50.0f, 50.0f, +50.0f);	//制御点
+	Vector3 p2(+50.0f, -30.0f, -50.0f);		//制御点
 	Vector3 p3(+100.0f, 0, 0);		//エンド地点
 	float maxTime = 5.0f;				//全体時間[s]
 	float timeRate;						//何% 時間が進んだか(率)
+
+	//p0-p1-p2-p3を通るスプライン曲線
+	std::vector<Vector3>points{ p0,p0,p1,p2,p3,p3 };
+
+	//p0からスタート
+	size_t startIndex = 1;
 
 	//球の位置
 	Vector3 position;
@@ -112,6 +123,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 		if (CheckHitKey(KEY_INPUT_R))
 		{
 			startCount = GetNowHiPerformanceCount();
+			startIndex = 1;
 		}
 
 		//経過時間(elapsedTime[s])の計算
@@ -124,7 +136,23 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 		//経過時間			:elapsedTime[s]
 		//移動完了の率(経過時間/全体時間):timeRate(%)
 
-		timeRate = min(elapsedTime / maxTime, 1.0f);
+		timeRate = elapsedTime / maxTime;
+		//timeRate = min(elapsedTime / maxTime, 1.0f);
+
+		if (timeRate >= 1.0f)
+		{
+			if (startIndex < points.size() - 3)
+			{
+				//
+				timeRate -= 3.0f;
+				startCount = GetNowHiPerformanceCount();
+			}
+			else
+			{
+				timeRate = 1.0f;
+			}
+		}
+		position = splinePosition(points,startIndex,timeRate);
 
 		//2次ベジエ曲線
 		Vector3 a = lerp(p0, p1, timeRate);
@@ -132,7 +160,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 		Vector3 c = lerp(p2, p3, timeRate);
 		Vector3 d = lerp(a, b, timeRate);
 		Vector3 e = lerp(b, c, timeRate);
-		position = lerp(d,e, timeRate);
+		position = lerp(d, e, timeRate);
 
 		// 画面クリア
 		ClearDrawScreen();			//画面を消去
@@ -223,4 +251,26 @@ int SetCameraPositionAndTargetAndUpVec(
 	VECTOR up = { cameraUp.x, cameraUp.y, cameraUp.z };
 
 	return SetCameraPositionAndTargetAndUpVec(position, target, up);
+}
+
+//n+2個の点使って、P1~Pnの間を、スプライン補間する
+//(P0)-P1-P2-...-Pn-(Pn+1)
+Vector3 splinePosition(const std::vector<Vector3>& points, size_t startIndex, float t)
+{
+	//補間すべき点の数
+	size_t n = points.size() - 2;
+
+	if (startIndex > n)return points[n];	//Pnの値を返す
+	if (startIndex < 1)return points[1];	//P1の値を返す
+
+	//P0~p3の制御点を取得する　P1~p2を補間する
+	Vector3 P0 = points[startIndex - 1];
+	Vector3 P1 = points[startIndex];
+	Vector3 P2 = points[startIndex + 1];
+	Vector3 P3 = points[startIndex + 2];
+
+	//Catmull-Romの式による補間
+	//Vector3 position
+
+	//return position;
 }

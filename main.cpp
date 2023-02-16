@@ -1,4 +1,5 @@
 #include <DxLib.h>
+#include<cstdlib>
 #include<vector>
 #include"Vector3.h"
 // ウィンドウのタイトルに表示する文字列
@@ -79,17 +80,17 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
 	//補間を使うデータ
 	//start->endを5[s]で完了させる
-	Vector3 p0(-100.0f, 0, 0);		//スタート地点
-	Vector3 p1(-50.0f, 50.0f, +50.0f);	//制御点
-	Vector3 p2(+50.0f, -30.0f, -50.0f);		//制御点
-	Vector3 p3(+100.0f, 0, 0);		//エンド地点
+	Vector3 start(-100.0f, 0, 0);		//スタート地点(P1)
+	Vector3 p2(-50.0f, 50.0f, +50.0f);	//制御点(P2)
+	Vector3 p3(+50.0f, -30.0f, -50.0f);	//制御点(P3)
+	Vector3 end(+100.0f, 0, 0);			//エンド地点(P4)
 	float maxTime = 5.0f;				//全体時間[s]
 	float timeRate;						//何% 時間が進んだか(率)
 
-	//p0-p1-p2-p3を通るスプライン曲線
-	std::vector<Vector3>points{ p0,p0,p1,p2,p3,p3 };
+	//p1-p2-p3-p4を通るスプライン曲線
+	std::vector<Vector3>points{ start,start,p2,p3,end,end };
 
-	//p0からスタート
+	//p1からスタート
 	size_t startIndex = 1;
 
 	//球の位置
@@ -136,6 +137,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 		//経過時間			:elapsedTime[s]
 		//移動完了の率(経過時間/全体時間):timeRate(%)
 
+		//timeRateが1.0f以上になったら,次の区間に進む
 		timeRate = elapsedTime / maxTime;
 		//timeRate = min(elapsedTime / maxTime, 1.0f);
 
@@ -143,8 +145,8 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 		{
 			if (startIndex < points.size() - 3)
 			{
-				//
-				timeRate -= 3.0f;
+				startIndex += 1;
+				timeRate -= 1.0f;
 				startCount = GetNowHiPerformanceCount();
 			}
 			else
@@ -155,12 +157,14 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 		position = splinePosition(points,startIndex,timeRate);
 
 		//2次ベジエ曲線
-		Vector3 a = lerp(p0, p1, timeRate);
+		/*Vector3 a = lerp(start, p1, timeRate);
 		Vector3 b = lerp(p1, p2, timeRate);
-		Vector3 c = lerp(p2, p3, timeRate);
+		Vector3 c = lerp(p2, end, timeRate);
 		Vector3 d = lerp(a, b, timeRate);
-		Vector3 e = lerp(b, c, timeRate);
-		position = lerp(d, e, timeRate);
+		Vector3 e = lerp(b, c, timeRate);*/
+		//position = lerp(d, e, timeRate);
+
+
 
 		// 画面クリア
 		ClearDrawScreen();			//画面を消去
@@ -169,10 +173,10 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
 		//球の描画
 		DrawSphere3D(position, 5.0f, 32, GetColor(255, 0, 0), GetColor(255, 255, 255), true);
-		DrawSphere3D(p0, 4.0f, 32, GetColor(0, 0, 255), GetColor(255, 255, 255), true);
-		DrawSphere3D(p1, 4.0f, 32, GetColor(0, 255, 0), GetColor(255, 255, 255), true);
-		DrawSphere3D(p2, 4.0f, 32, GetColor(0, 255, 255), GetColor(255, 255, 255), true);
-		DrawSphere3D(p3, 4.0f, 32, GetColor(255, 255, 0), GetColor(255, 255, 255), true);
+		DrawSphere3D(start, 4.0f, 32, GetColor(0, 0, 255), GetColor(255, 255, 255), true);
+		DrawSphere3D(p2, 4.0f, 32, GetColor(0, 255, 0), GetColor(255, 255, 255), true);
+		DrawSphere3D(p3, 4.0f, 32, GetColor(0, 255, 255), GetColor(255, 255, 255), true);
+		DrawSphere3D(end, 4.0f, 32, GetColor(255, 255, 0), GetColor(255, 255, 255), true);
 
 
 		//DrawSphere3D(a, 2.0f, 32, GetColor(0, 255, 0), GetColor(255, 255, 255), true);
@@ -186,12 +190,12 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 		DrawFormatString(0, 20, GetColor(255, 255, 255), "%7.3f[s]", elapsedTime);
 		DrawFormatString(0, 40, GetColor(255, 255, 255), "[R]:Restart");
 
-		DrawFormatString(0, 0, GetColor(255, 255, 255), "p0(%6.1f,%6.1f,%6.1f)",
-			p0.x, p0.y, p0.z);
-		DrawFormatString(0, 0, GetColor(255, 255, 255), "p1(%6.1f,%6.1f,%6.1f)",
-			p1.x, p1.y, p1.z);
-		DrawFormatString(0, 0, GetColor(255, 255, 255), "p2(%6.1f,%6.1f,%6.1f)",
+		DrawFormatString(0, 60, GetColor(255, 255, 255), "p0(%6.1f,%6.1f,%6.1f)",
+			start.x, start.y, start.z);
+		DrawFormatString(0, 80, GetColor(255, 255, 255), "p1(%6.1f,%6.1f,%6.1f)",
 			p2.x, p2.y, p2.z);
+		DrawFormatString(0, 100, GetColor(255, 255, 255), "p2(%6.1f,%6.1f,%6.1f)",
+			p3.x, p3.y, p3.z);
 		//---------  ここまでにプログラムを記述  ---------//
 		// (ダブルバッファ)裏面
 		ScreenFlip();
@@ -264,13 +268,15 @@ Vector3 splinePosition(const std::vector<Vector3>& points, size_t startIndex, fl
 	if (startIndex < 1)return points[1];	//P1の値を返す
 
 	//P0~p3の制御点を取得する　P1~p2を補間する
-	Vector3 P0 = points[startIndex - 1];
-	Vector3 P1 = points[startIndex];
-	Vector3 P2 = points[startIndex + 1];
-	Vector3 P3 = points[startIndex + 2];
+	Vector3 p0 = points[startIndex - 1];
+	Vector3 p1 = points[startIndex];
+	Vector3 p2 = points[startIndex + 1];
+	Vector3 p3 = points[startIndex + 2];
 
 	//Catmull-Romの式による補間
-	//Vector3 position
+	Vector3 position = 0.5 * (2 * p1 + (-p0 + p2) * t +
+					(2 * p0 - 5 * p1 + 4 * p2 - p3) * t * t +
+					(-p0 + 3 * p1 - 3 * p2 + p3) * t * t * t);
 
-	//return position;
+	return position;
 }

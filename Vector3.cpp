@@ -40,7 +40,7 @@ Vector3 Vector3::cross(const Vector3& v)const
 	Vector3 temp;
 	temp.x = this->y * v.z - this->z * v.y;
 	temp.y = this->z * v.x - this->x * v.z;
-	temp.z = this->x * v.y - this->y * v.z;
+	temp.z = this->x * v.y - this->y * v.x;
 	return temp;
 }
 

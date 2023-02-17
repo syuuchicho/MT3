@@ -50,10 +50,12 @@ float Quaternion::Norm(const Quaternion& quaternion)
 Quaternion Quaternion::Normalize(const Quaternion& quaternion)
 {
 	Quaternion temp;
-	temp.w = Norm(quaternion);
-	if (temp.w != 0)
+	float len;
+	temp = quaternion;
+	len = Norm(quaternion);
+	if (len != 0)
 	{
-		return temp /= temp.w;
+		return temp /= len;
 	}
 	return temp;
 }
@@ -63,6 +65,9 @@ Quaternion Quaternion::Inverse(const Quaternion& quaternion)
 	Quaternion temp;
 	temp = Conjugate(quaternion);
 	temp /= Norm(quaternion)*Norm(quaternion);
+	temp.x *= -1;
+	temp.y *= -1;
+	temp.z *= -1;
 
 	return temp;
 }
@@ -81,16 +86,4 @@ Quaternion& Quaternion::operator/=(float s)
 }
 
 
-//Quaternion& operator/=(const Quaternion& v, float s)
-//{
-//	Quaternion temp;
-//	temp.w = v.w;
-//	temp.x = v.x;
-//	temp.x /= s;
-//	temp.y = v.y;
-//	temp.y /= s;
-//	temp.z = v.z;
-//	temp.z /= s;
-//
-//	return temp;
-//}
+

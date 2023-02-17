@@ -31,6 +31,4 @@ public://ƒƒ“ƒo[ŠÖ”
 
 public:
 };
-	//Quaternion& operator/=(const Quaternion& v,float s);
-	//const Quaternion operator/(const Quaternion& v, float s);
 

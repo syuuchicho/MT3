@@ -1,7 +1,7 @@
 #include <DxLib.h>
 #include<cstdlib>
 #include<vector>
-#include"Vector3.h"
+#include"Quaternion.h"
 // ウィンドウのタイトルに表示する文字列
 const char TITLE[] = "xx2x_xx_ナマエ: タイトル";
 
@@ -84,9 +84,20 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	Vector3 p2(-50.0f, 50.0f, +50.0f);	//制御点(P2)
 	Vector3 p3(+50.0f, -30.0f, -50.0f);	//制御点(P3)
 	Vector3 end(+100.0f, 0, 0);			//エンド地点(P4)
+
 	float maxTime = 5.0f;				//全体時間[s]
 	float timeRate;						//何% 時間が進んだか(率)
 
+	Quaternion* quaternion = nullptr;
+	Quaternion q1 = { 2.0f, 3.0f, 4.0f, 1.0f };
+	Quaternion q2 = { 1.0f, 3.0f, 5.0f, 2.0f };
+	Quaternion identity = quaternion->IdentityQuaternion();
+	Quaternion conj = quaternion->Conjugate(q1);
+	Quaternion inv = quaternion->Inverse(q1);
+	Quaternion normal = quaternion->Normalize(q1);
+	Quaternion mul1 = quaternion->Multiply(q1, q2);
+	Quaternion mul2 = quaternion->Multiply(q2, q1);
+		 float norm = quaternion->Norm(q1);
 	//p1-p2-p3-p4を通るスプライン曲線
 	std::vector<Vector3>points{ start,start,p2,p3,end,end };
 
@@ -114,55 +125,12 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 		}
 		// 最新のキーボード情報を取得
 		GetHitKeyStateAll(keys);
-
-
+	
 		//---------  ここからプログラムを記述  ----------//
 
 
 		// 更新処理
-		//[R]キー　で、リスタート
-		if (CheckHitKey(KEY_INPUT_R))
-		{
-			startCount = GetNowHiPerformanceCount();
-			startIndex = 1;
-		}
-
-		//経過時間(elapsedTime[s])の計算
-		nowCount = GetNowHiPerformanceCount();
-		elapsedCount = nowCount - startCount;
-		float elapsedTime = static_cast<float>(elapsedCount) / 1'000'000.0f;
-
-		//スタート地点		:start
-		//エンド地点		:end
-		//経過時間			:elapsedTime[s]
-		//移動完了の率(経過時間/全体時間):timeRate(%)
-
-		//timeRateが1.0f以上になったら,次の区間に進む
-		timeRate = elapsedTime / maxTime;
-		//timeRate = min(elapsedTime / maxTime, 1.0f);
-
-		if (timeRate >= 1.0f)
-		{
-			if (startIndex < points.size() - 3)
-			{
-				startIndex += 1;
-				timeRate -= 1.0f;
-				startCount = GetNowHiPerformanceCount();
-			}
-			else
-			{
-				timeRate = 1.0f;
-			}
-		}
-		position = splinePosition(points,startIndex,timeRate);
-
-		//2次ベジエ曲線
-		/*Vector3 a = lerp(start, p1, timeRate);
-		Vector3 b = lerp(p1, p2, timeRate);
-		Vector3 c = lerp(p2, end, timeRate);
-		Vector3 d = lerp(a, b, timeRate);
-		Vector3 e = lerp(b, c, timeRate);*/
-		//position = lerp(d, e, timeRate);
+		
 
 
 
@@ -170,32 +138,15 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 		ClearDrawScreen();			//画面を消去
 		// 描画処理
 		DrawAxis3D(500.0f);			//xyz軸の描画
+		DrawFormatString(0, 0, GetColor(255, 255, 255), "%f %f %f %f :identity", identity.x, identity.y, identity.z, identity.w);
+		DrawFormatString(0, 20, GetColor(255, 255, 255), "%f %f %f %f :Conjugate", conj.x, conj.y, conj.z, conj.w);
+		DrawFormatString(0, 40, GetColor(255, 255, 255), "%f %f %f %f :Inverse", inv.x, inv.y, inv.z, inv.w);
+		DrawFormatString(0, 60, GetColor(255, 255, 255), "%f %f %f %f :Normalize", normal.x,normal.y,normal.z,normal.w);
+		DrawFormatString(0, 80, GetColor(255, 255, 255), "%f %f %f %f :Multiply(q1, q2)", mul1.x, mul1.y, mul1.z, mul1.w);
+		DrawFormatString(0, 100, GetColor(255, 255, 255), "%f %f %f %f :Multiply(q2, q1)", mul2.x, mul2.y, mul2.z, mul2.w);
+		DrawFormatString(0, 120, GetColor(255, 255, 255), "%f :Norm", norm);
 
-		//球の描画
-		DrawSphere3D(position, 5.0f, 32, GetColor(255, 0, 0), GetColor(255, 255, 255), true);
-		DrawSphere3D(start, 4.0f, 32, GetColor(0, 0, 255), GetColor(255, 255, 255), true);
-		DrawSphere3D(p2, 4.0f, 32, GetColor(0, 255, 0), GetColor(255, 255, 255), true);
-		DrawSphere3D(p3, 4.0f, 32, GetColor(0, 255, 255), GetColor(255, 255, 255), true);
-		DrawSphere3D(end, 4.0f, 32, GetColor(255, 255, 0), GetColor(255, 255, 255), true);
 
-
-		//DrawSphere3D(a, 2.0f, 32, GetColor(0, 255, 0), GetColor(255, 255, 255), true);
-		//DrawSphere3D(b, 2.0f, 32, GetColor(0, 255, 0), GetColor(255, 255, 255), true);
-		//DrawLine3D(a,b,GetColor(0, 255, 0));
-
-		//
-		DrawFormatString(0, 0, GetColor(255, 255, 255), "position(%6.1f,%6.1f,%6.1f)",
-			position.x, position.y, position.z);
-
-		DrawFormatString(0, 20, GetColor(255, 255, 255), "%7.3f[s]", elapsedTime);
-		DrawFormatString(0, 40, GetColor(255, 255, 255), "[R]:Restart");
-
-		DrawFormatString(0, 60, GetColor(255, 255, 255), "p0(%6.1f,%6.1f,%6.1f)",
-			start.x, start.y, start.z);
-		DrawFormatString(0, 80, GetColor(255, 255, 255), "p1(%6.1f,%6.1f,%6.1f)",
-			p2.x, p2.y, p2.z);
-		DrawFormatString(0, 100, GetColor(255, 255, 255), "p2(%6.1f,%6.1f,%6.1f)",
-			p3.x, p3.y, p3.z);
 		//---------  ここまでにプログラムを記述  ---------//
 		// (ダブルバッファ)裏面
 		ScreenFlip();

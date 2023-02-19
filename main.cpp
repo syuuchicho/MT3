@@ -89,7 +89,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	float timeRate;						//何% 時間が進んだか(率)
 
 	Quaternion* quaternion = nullptr;
-	Quaternion q1 = { 2.0f, 3.0f, 4.0f, 1.0f };
+	/*Quaternion q1 = { 2.0f, 3.0f, 4.0f, 1.0f };
 	Quaternion q2 = { 1.0f, 3.0f, 5.0f, 2.0f };
 	Quaternion identity = quaternion->IdentityQuaternion();
 	Quaternion conj = quaternion->Conjugate(q1);
@@ -97,7 +97,13 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	Quaternion normal = quaternion->Normalize(q1);
 	Quaternion mul1 = quaternion->Multiply(q1, q2);
 	Quaternion mul2 = quaternion->Multiply(q2, q1);
-		 float norm = quaternion->Norm(q1);
+		 float norm = quaternion->Norm(q1);*/
+
+	Quaternion rotation = quaternion->MakeAxisAngle({ 0.0f,0.0f,1.0f }, 3.141592f / 2.0f);
+	Vector3 pointY = { 0.0f,1.0f,0.0f };
+	Matrix4 rotateMatrix = quaternion->MakeRotateMatrix(rotation);
+	Vector3 rotateByQuaternion = quaternion->RotateVector(pointY, rotation);
+	//Vector3 rotateByMatrix = quaternion->TransformAffine(pointY, rotateMatrix);
 	//p1-p2-p3-p4を通るスプライン曲線
 	std::vector<Vector3>points{ start,start,p2,p3,end,end };
 
@@ -138,14 +144,16 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 		ClearDrawScreen();			//画面を消去
 		// 描画処理
 		DrawAxis3D(500.0f);			//xyz軸の描画
-		DrawFormatString(0, 0, GetColor(255, 255, 255), "%f %f %f %f :identity", identity.x, identity.y, identity.z, identity.w);
+	/*	DrawFormatString(0, 0, GetColor(255, 255, 255), "%f %f %f %f :identity", identity.x, identity.y, identity.z, identity.w);
 		DrawFormatString(0, 20, GetColor(255, 255, 255), "%f %f %f %f :Conjugate", conj.x, conj.y, conj.z, conj.w);
 		DrawFormatString(0, 40, GetColor(255, 255, 255), "%f %f %f %f :Inverse", inv.x, inv.y, inv.z, inv.w);
 		DrawFormatString(0, 60, GetColor(255, 255, 255), "%f %f %f %f :Normalize", normal.x,normal.y,normal.z,normal.w);
 		DrawFormatString(0, 80, GetColor(255, 255, 255), "%f %f %f %f :Multiply(q1, q2)", mul1.x, mul1.y, mul1.z, mul1.w);
 		DrawFormatString(0, 100, GetColor(255, 255, 255), "%f %f %f %f :Multiply(q2, q1)", mul2.x, mul2.y, mul2.z, mul2.w);
-		DrawFormatString(0, 120, GetColor(255, 255, 255), "%f :Norm", norm);
-
+		DrawFormatString(0, 120, GetColor(255, 255, 255), "%f :Norm", norm);*/
+		DrawFormatString(0, 0, GetColor(255, 255, 255), "%f %f %f %f :rotation", rotation.x, rotation.y, rotation.z, rotation.w);
+		DrawFormatString(0, 20, GetColor(255, 255, 255), "%f %f %f :rotateByQuaternion", rotateByQuaternion.x, rotateByQuaternion.y, rotateByQuaternion.z);
+		//DrawFormatString(0, 40, GetColor(255, 255, 255), "%f %f %f :rotateByMatrix", rotateByMatrix.x, rotateByMatrix.y, rotateByMatrix.z);
 
 		//---------  ここまでにプログラムを記述  ---------//
 		// (ダブルバッファ)裏面

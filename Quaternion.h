@@ -1,5 +1,7 @@
 #pragma once
 #include"Vector3.h"
+#include"Matrix4.h"
+
 
 class Quaternion
 {
@@ -27,8 +29,16 @@ public://メンバー関数
 	//逆Quaternionを返す
 	Quaternion Inverse(const Quaternion& quaternion);
 
-	Quaternion& operator/=(float s);
+	//任意軸回転を表すQuaternionの生成
+	Quaternion MakeAxisAngle(const Vector3& axis, float angle);
+
+	//ベクトルをQuaternionで回転させた結果のベクトルを求める
+	Vector3 RotateVector(const Vector3& vector, const Quaternion& quaternion);
+
+	//Quaternionから回転行列を求める
+	Matrix4 MakeRotateMatrix(const Quaternion& quaternion);
 
 public:
+	Quaternion& operator/=(float s);
 };
 

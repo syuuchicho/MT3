@@ -2,7 +2,7 @@
 #include<cmath>		//sqrt
 
 Quaternion::Quaternion()
-	: x(0), y(0), z(0), w(0),v(0,0,0)
+	: x(0), y(0), z(0), w(0), v(0, 0, 0)
 {
 }
 
@@ -64,13 +64,73 @@ Quaternion Quaternion::Inverse(const Quaternion& quaternion)
 {
 	Quaternion temp;
 	temp = Conjugate(quaternion);
-	temp /= Norm(quaternion)*Norm(quaternion);
+	temp /= Norm(quaternion) * Norm(quaternion);
 	temp.x *= -1;
 	temp.y *= -1;
 	temp.z *= -1;
 
 	return temp;
 }
+
+Quaternion Quaternion::MakeAxisAngle(const Vector3& axis, float angle)
+{
+	Quaternion temp;
+	temp.w = cos(angle) / 2;
+	//axisÇê≥ãKâª
+	temp.v = axis;
+	float len = (float)sqrt(axis.x * axis.x + axis.y * axis.y + axis.z * axis.z);
+	if (len != 0)
+	{
+		temp.v = temp.v /= len;
+	}
+	temp.v = temp.v;
+
+	temp.v *= sin(angle) / 2;
+	temp.x = temp.v.x;
+	temp.y = temp.v.y;
+	temp.z = temp.v.z;
+	return temp;
+}
+
+Vector3 Quaternion::RotateVector(const Vector3& vector, const Quaternion& quaternion)
+{
+	Quaternion r;
+	r.x = vector.x;
+	r.y = vector.y;
+	r.z = vector.z;
+	r.w = 0;
+	r.v = vector;
+
+	Quaternion q1 = Multiply(Multiply(quaternion, r), Inverse(quaternion));
+	//q1.v = { q1.x,q1.y,q1.z };
+
+
+	return q1.v;
+}
+
+Matrix4 Quaternion::MakeRotateMatrix(const Quaternion& quaternion)
+{
+	Matrix4 temp;
+	temp.m[0][0] = quaternion.w * quaternion.w + quaternion.x * quaternion.x - quaternion.y * quaternion.y - quaternion.z * quaternion.z;
+	temp.m[0][1] = (quaternion.x * quaternion.y + quaternion.w * quaternion.z) * 2;
+	temp.m[0][2] = (quaternion.x * quaternion.z - quaternion.w * quaternion.y) * 2;
+	temp.m[0][3] = 0;
+	temp.m[1][0] = (quaternion.x * quaternion.y - quaternion.w * quaternion.z) * 2;
+	temp.m[1][1] = quaternion.w * quaternion.w - quaternion.x * quaternion.x + quaternion.y * quaternion.y - quaternion.z * quaternion.z;
+	temp.m[1][2] = (quaternion.y * quaternion.z + quaternion.w * quaternion.x) * 2;
+	temp.m[1][3] = 0;
+	temp.m[2][0] = (quaternion.x * quaternion.z + quaternion.w * quaternion.y) * 2;
+	temp.m[2][1] = (quaternion.y * quaternion.z + quaternion.w * quaternion.x) * 2;
+	temp.m[2][2] = quaternion.w * quaternion.w - quaternion.x * quaternion.x - quaternion.y * quaternion.y + quaternion.z * quaternion.z;
+	temp.m[2][3] = 0;
+	temp.m[3][0] = 0;
+	temp.m[3][1] = 0;
+	temp.m[3][2] = 0;
+	temp.m[3][3] = 1;
+	return temp;
+}
+
+
 
 Quaternion& Quaternion::operator/=(float s)
 {

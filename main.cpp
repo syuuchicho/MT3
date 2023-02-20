@@ -153,6 +153,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 		DrawFormatString(0, 120, GetColor(255, 255, 255), "%f :Norm", norm);*/
 		DrawFormatString(0, 0, GetColor(255, 255, 255), "%f %f %f %f :rotation", rotation.x, rotation.y, rotation.z, rotation.w);
 		DrawFormatString(0, 20, GetColor(255, 255, 255), "%f %f %f :rotateByQuaternion", rotateByQuaternion.x, rotateByQuaternion.y, rotateByQuaternion.z);
+		
 		//DrawFormatString(0, 40, GetColor(255, 255, 255), "%f %f %f :rotateByMatrix", rotateByMatrix.x, rotateByMatrix.y, rotateByMatrix.z);
 
 		//---------  ここまでにプログラムを記述  ---------//

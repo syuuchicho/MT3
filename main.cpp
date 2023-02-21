@@ -103,7 +103,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	Vector3 pointY = { 0.0f,1.0f,0.0f };
 	Matrix4 rotateMatrix = quaternion->MakeRotateMatrix(rotation);
 	Vector3 rotateByQuaternion = quaternion->RotateVector(pointY, rotation);
-	//Vector3 rotateByMatrix = quaternion->TransformAffine(pointY, rotateMatrix);
+	Vector3 rotateByMatrix = transform(pointY, rotateMatrix);
 	//p1-p2-p3-p4を通るスプライン曲線
 	std::vector<Vector3>points{ start,start,p2,p3,end,end };
 
@@ -153,8 +153,8 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 		DrawFormatString(0, 120, GetColor(255, 255, 255), "%f :Norm", norm);*/
 		DrawFormatString(0, 0, GetColor(255, 255, 255), "%f %f %f %f :rotation", rotation.x, rotation.y, rotation.z, rotation.w);
 		DrawFormatString(0, 20, GetColor(255, 255, 255), "%f %f %f :rotateByQuaternion", rotateByQuaternion.x, rotateByQuaternion.y, rotateByQuaternion.z);
-		
-		//DrawFormatString(0, 40, GetColor(255, 255, 255), "%f %f %f :rotateByMatrix", rotateByMatrix.x, rotateByMatrix.y, rotateByMatrix.z);
+		DrawFormatString(0, 40, GetColor(255, 255, 255), "%f %f %f :rotateByMatrix", rotateByMatrix.x, rotateByMatrix.y, rotateByMatrix.z);
+
 
 		//---------  ここまでにプログラムを記述  ---------//
 		// (ダブルバッファ)裏面

@@ -45,8 +45,8 @@ float Quaternion::Norm(const Quaternion& quaternion)
 {
 	Quaternion temp = quaternion;
 
-	return (float)sqrt(temp.x * temp.x + temp.y * temp.y + temp.z * temp.z+temp.w * temp.w);
-	
+	return (float)sqrt(temp.x * temp.x + temp.y * temp.y + temp.z * temp.z + temp.w * temp.w);
+
 }
 
 Quaternion Quaternion::Normalize(const Quaternion& quaternion)
@@ -67,9 +67,6 @@ Quaternion Quaternion::Inverse(const Quaternion& quaternion)
 	Quaternion temp;
 	temp = Conjugate(quaternion);
 	temp /= Norm(quaternion) * Norm(quaternion);
-	temp.x *= -1;
-	temp.y *= -1;
-	temp.z *= -1;
 
 	return temp;
 }
@@ -77,20 +74,12 @@ Quaternion Quaternion::Inverse(const Quaternion& quaternion)
 Quaternion Quaternion::MakeAxisAngle(const Vector3& axis, float angle)
 {
 	Quaternion temp;
-	//axisÇê≥ãKâª
-	temp.v = axis;
-	float len = (float)sqrt(axis.x * axis.x+ axis.y * axis.y+axis.z * axis.z);
-	if (len != 0)
-	{
-		temp /= len;
-	}
-	temp = temp;
 
-	temp.v *= cos(angle) / 2;
+	temp.v = axis * sinf(angle / 2.0f);
 	temp.x = temp.v.x;
 	temp.y = temp.v.y;
 	temp.z = temp.v.z;
-	temp.w = len*sin(angle) / 2;
+	temp.w = cosf(angle / 2.0f);
 	return temp;
 }
 
@@ -104,8 +93,6 @@ Vector3 Quaternion::RotateVector(const Vector3& vector, const Quaternion& quater
 	r.v = vector;
 
 	Quaternion q1 = Multiply(Multiply(quaternion, r), Inverse(quaternion));
-	//q1.v = { q1.x,q1.y,q1.z };
-	
 
 	return q1.v;
 }
@@ -132,20 +119,12 @@ Matrix4 Quaternion::MakeRotateMatrix(const Quaternion& quaternion)
 	return temp;
 }
 
-
-
 Quaternion& Quaternion::operator/=(float s)
 {
 	w /= s;
-	x = v.x;
 	x /= s;
-	y = v.y;
 	y /= s;
-	z = v.z;
 	z /= s;
 
 	return *this;
 }
-
-
-

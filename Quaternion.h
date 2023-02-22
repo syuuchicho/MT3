@@ -37,7 +37,12 @@ public://メンバー関数
 	//Quaternionから回転行列を求める
 	Matrix4 MakeRotateMatrix(const Quaternion& quaternion);
 
+	//球面線形補間
+	Quaternion Slerp(const Quaternion& q0, const Quaternion& q1, float t);
+
 public:
 	Quaternion& operator/=(float s);
+	//Quaternion operator*(const Quaternion& q);
 };
+	const Quaternion operator*(const Quaternion& q,float s);
 

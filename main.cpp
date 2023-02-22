@@ -73,43 +73,12 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 		Vector3(0.0f, 0.0f, 0.0f),
 		Vector3(0.0f, 1.0f, 0.0f));
 
-	//時間計測に必要なデータ
-	long long startCount = 0;
-	long long nowCount = 0;
-	long long elapsedCount = 0;
-
-	//補間を使うデータ
-	//start->endを5[s]で完了させる
-	Vector3 start(-100.0f, 0, 0);		//スタート地点(P1)
-	Vector3 p2(-50.0f, 50.0f, +50.0f);	//制御点(P2)
-	Vector3 p3(+50.0f, -30.0f, -50.0f);	//制御点(P3)
-	Vector3 end(+100.0f, 0, 0);			//エンド地点(P4)
-
-	float maxTime = 5.0f;				//全体時間[s]
-	float timeRate;						//何% 時間が進んだか(率)
-
 	Quaternion* quaternion = nullptr;
-	Quaternion rotation0 = quaternion->MakeAxisAngle({ 0.71f,0.71f,0.0f }, 0.3f);
-	Quaternion rotation1 = quaternion->MakeAxisAngle({ 0.71f,0.0f,0.71f }, 3.141592f);
-
-	Quaternion interpolate0 = quaternion->Slerp(rotation0, rotation1, 0.0f);
-	Quaternion interpolate1 = quaternion->Slerp(rotation0, rotation1, 0.3f);
-	Quaternion interpolate2 = quaternion->Slerp(rotation0, rotation1, 0.5f);
-	Quaternion interpolate3 = quaternion->Slerp(rotation0, rotation1, 0.7f);
-	Quaternion interpolate4 = quaternion->Slerp(rotation0, rotation1, 1.0f);
+	Vector3 direction1 = { 1.0f,0.0f,1.0f };
+	Vector3 direction2 = { 1.0f,1.0f,0.0f };
+	Quaternion dirToDir = quaternion->DirectionToDirection(direction1, direction2);
 
 
-	//p1-p2-p3-p4を通るスプライン曲線
-	std::vector<Vector3>points{ start,start,p2,p3,end,end };
-
-	//p1からスタート
-	size_t startIndex = 1;
-
-	//球の位置
-	Vector3 position;
-
-	//実行前に　カウンタ値を取得
-	startCount = GetNowHiPerformanceCount();	//long long int型　64bit int
 
 	// 最新のキーボード情報用
 	char keys[256] = { 0 };
@@ -126,12 +95,12 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 		}
 		// 最新のキーボード情報を取得
 		GetHitKeyStateAll(keys);
-	
+
 		//---------  ここからプログラムを記述  ----------//
 
 
 		// 更新処理
-		
+
 
 
 
@@ -139,11 +108,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 		ClearDrawScreen();			//画面を消去
 		// 描画処理
 		DrawAxis3D(500.0f);			//xyz軸の描画
-		DrawFormatString(0, 0, GetColor(255, 255, 255), "%f %f %f %f :interpolate0", interpolate0.x, interpolate0.y, interpolate0.z, interpolate0.w);
-		DrawFormatString(0, 20, GetColor(255, 255, 255), "%f %f %f %f :interpolate1", interpolate1.x, interpolate1.y, interpolate1.z, interpolate1.w);
-		DrawFormatString(0, 40, GetColor(255, 255, 255), "%f %f %f %f :interpolate2", interpolate2.x, interpolate2.y, interpolate2.z, interpolate2.w);
-		DrawFormatString(0, 60, GetColor(255, 255, 255), "%f %f %f %f :interpolate3", interpolate3.x, interpolate3.y, interpolate3.z, interpolate3.w);
-		DrawFormatString(0, 80, GetColor(255, 255, 255), "%f %f %f %f :interpolate4", interpolate4.x, interpolate4.y, interpolate4.z, interpolate4.w);
+		DrawFormatString(0, 0, GetColor(255, 255, 255), "%f %f %f %f :dirToDir", dirToDir.x, dirToDir.y, dirToDir.z, dirToDir.w);
 
 
 		//---------  ここまでにプログラムを記述  ---------//
@@ -225,8 +190,8 @@ Vector3 splinePosition(const std::vector<Vector3>& points, size_t startIndex, fl
 
 	//Catmull-Romの式による補間
 	Vector3 position = 0.5 * (2 * p1 + (-p0 + p2) * t +
-					(2 * p0 - 5 * p1 + 4 * p2 - p3) * t * t +
-					(-p0 + 3 * p1 - 3 * p2 + p3) * t * t * t);
+		(2 * p0 - 5 * p1 + 4 * p2 - p3) * t * t +
+		(-p0 + 3 * p1 - 3 * p2 + p3) * t * t * t);
 
 	return position;
 }
